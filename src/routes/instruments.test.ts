@@ -1,25 +1,22 @@
-import type { QueryResult } from "pg";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createApp } from "../app.js";
 import { request } from "../test/request.js";
 
-vi.mock("../db.js", () => ({
-  pool: {
-    query: vi.fn(),
+const { findMany } = vi.hoisted(() => ({
+  findMany: vi.fn(),
+}));
+
+vi.mock("../prisma.js", () => ({
+  prisma: {
+    instrument: {
+      findMany,
+    },
   },
 }));
 
-import { pool } from "../db.js";
-
-type InstrumentsQuery = (
-  queryText: string,
-) => Promise<QueryResult<{ id: number; name: string }>>;
-
-const mockedQuery = vi.mocked(pool.query as InstrumentsQuery);
-
 describe("GET /instruments", () => {
   beforeEach(() => {
-    mockedQuery.mockReset();
+    findMany.mockReset();
   });
 
   it("returns instruments as JSON", async () => {
@@ -27,26 +24,21 @@ describe("GET /instruments", () => {
       { id: 1, name: "Guitar" },
       { id: 2, name: "Bass" },
     ];
-    mockedQuery.mockResolvedValueOnce({
-      rows,
-      command: "SELECT",
-      rowCount: rows.length,
-      oid: 0,
-      fields: [],
-    });
+    findMany.mockResolvedValueOnce(rows);
 
     const app = createApp();
     const res = await request(app, "GET", "/instruments");
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(rows);
-    expect(mockedQuery).toHaveBeenCalledWith(
-      "SELECT id, name FROM instruments ORDER BY id",
-    );
+    expect(findMany).toHaveBeenCalledWith({
+      orderBy: { id: "asc" },
+      select: { id: true, name: true },
+    });
   });
 
   it("returns 500 when the database query fails", async () => {
-    mockedQuery.mockRejectedValueOnce(new Error("connection refused"));
+    findMany.mockRejectedValueOnce(new Error("connection refused"));
 
     const app = createApp();
     const res = await request(app, "GET", "/instruments");
