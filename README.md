@@ -46,7 +46,7 @@ Musicians & bands
 
 Reference data
 
-- [ ] GET `/instruments`
+- [x] GET `/instruments`
 
 Tours & gigs
 
