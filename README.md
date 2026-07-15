@@ -1,4 +1,12 @@
-# Fill-In: Find your last-minute bandmate
+# Fill-In
+
+> Keep your tour on track with support from locals in the industry.
+
+## Table of Contents
+
+1. [Inspiration](#inspiration)
+2. [Data Schema](#data-schema)
+3. [Road Map](#roadmap)
 
 ## Inspiration
 
@@ -7,3 +15,59 @@ It is no secret that getting a band off the ground is incredibly difficult. Alon
 ## Data Schema
 
 ![Logo](./db/schema.png)
+
+## Roadmap
+
+#### Database
+
+- [x] Draft PostgreSQL schema
+- [x] Stand up database with seed data
+
+
+
+#### Endpoints
+
+Auth & users
+
+- [ ] POST `/users` (new user signup)
+- [ ] POST `/auth/login`
+- [ ] GET `/users/me`
+
+Musicians & bands
+
+- [ ] POST `/musicians`
+- [ ] GET `/musicians`
+- [ ] GET `/musicians/:id`
+- [ ] PATCH `/musicians/:id`
+- [ ] PUT `/musicians/:id/instruments`
+- [ ] POST `/bands`
+- [ ] GET `/bands/:id`
+- [ ] PATCH `/bands/:id`
+
+Reference data
+
+- [ ] GET `/instruments`
+
+Tours & gigs
+
+- [ ] GET `/tours`
+- [ ] POST `/tours`
+- [ ] GET `/tours/:id`
+- [ ] PATCH `/tours/:id`
+- [ ] GET `/gigs`
+- [ ] POST `/gigs`
+- [ ] GET `/gigs/:id`
+- [ ] PATCH `/gigs/:id`
+
+Gig listings
+
+- [ ] GET `/gig-listings`
+- [ ] GET `/gig-listings/:id`
+- [ ] POST `/gig-listings`
+- [ ] PATCH `/gig-listings/:id` (status: open / filled / cancelled)
+
+Applications
+
+- [ ] GET `/applications` (filter by listing_id and/or musician_id; sort ascending by created_at)
+- [ ] POST `/applications`
+- [ ] PATCH `/applications/:id` (status: pending / reviewed / shortlisted / accepted / rejected)
