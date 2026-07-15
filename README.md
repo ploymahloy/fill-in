@@ -6,4 +6,4 @@ It is no secret that getting a band off the ground is incredibly difficult. Alon
 
 ## Data Schema
 
-![Logo](./schema.png)
+![Logo](./db/schema.png)
