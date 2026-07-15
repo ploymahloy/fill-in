@@ -61,7 +61,7 @@ Tours & gigs
 
 Gig listings
 
-- [ ] GET `/gig-listings`
+- [x] GET `/gig-listings` (planned filters: status, instrument_needed, pay_rate, pay_type, status)
 - [ ] GET `/gig-listings/:id`
 - [ ] POST `/gig-listings`
 - [ ] PATCH `/gig-listings/:id` (status: open / filled / cancelled)
