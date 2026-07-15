@@ -1,5 +1,6 @@
 import express, { type Response } from "express";
 import instrumentsRouter from "./routes/instruments.js";
+import musiciansRouter from "./routes/musicians.js";
 
 export function createApp() {
   const app = express();
@@ -11,6 +12,7 @@ export function createApp() {
   });
 
   app.use("/instruments", instrumentsRouter);
+  app.use("/musicians", musiciansRouter);
 
   return app;
 }

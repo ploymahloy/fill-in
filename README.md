@@ -36,7 +36,7 @@ Auth & users
 Musicians & bands
 
 - [ ] POST `/musicians`
-- [ ] GET `/musicians`
+- [x] GET `/musicians`
 - [ ] GET `/musicians/:id`
 - [ ] PATCH `/musicians/:id`
 - [ ] PUT `/musicians/:id/instruments`
