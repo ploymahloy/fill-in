@@ -1,3 +1,4 @@
+import type { QueryResult } from "pg";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createApp } from "../app.js";
 import { request } from "../test/request.js";
@@ -10,7 +11,11 @@ vi.mock("../db.js", () => ({
 
 import { pool } from "../db.js";
 
-const mockedQuery = vi.mocked(pool.query);
+type InstrumentsQuery = (
+  queryText: string,
+) => Promise<QueryResult<{ id: number; name: string }>>;
+
+const mockedQuery = vi.mocked(pool.query as InstrumentsQuery);
 
 describe("GET /instruments", () => {
   beforeEach(() => {
