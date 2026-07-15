@@ -18,14 +18,12 @@ It is no secret that getting a band off the ground is incredibly difficult. Alon
 
 ## Roadmap
 
-#### Database
+### Database
 
 - [x] Draft PostgreSQL schema
 - [x] Stand up database with seed data
 
-
-
-#### Endpoints
+### Endpoints
 
 Auth & users
 
@@ -71,3 +69,10 @@ Applications
 - [ ] GET `/applications` (filter by listing_id and/or musician_id; sort ascending by created_at)
 - [ ] POST `/applications`
 - [ ] PATCH `/applications/:id` (status: pending / reviewed / shortlisted / accepted / rejected)
+
+### UI
+
+- [ ] Search page for gigs/musicians
+- [ ] Design gigs/musician profiles (Searches will return a list of gig/musician cards)
+- [ ] Application form for gigs
+- [ ] Contact form for musicians
