@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { prisma } from "../prisma.js";
+import type { Musician } from "../types/index.ts";
 
 const router = Router();
 
@@ -24,7 +25,7 @@ router.get("/", async (_req: Request, res: Response) => {
         });
 
         res.status(200).json(
-            musicians.map((musician) => ({
+            musicians.map((musician: Musician) => ({
                 id: musician.id,
                 user_id: musician.userId,
                 stage_name: musician.stageName,
