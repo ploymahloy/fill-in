@@ -2,14 +2,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createApp } from "../app.js";
 import { request } from "../test/request.js";
 
-const { findMany } = vi.hoisted(() => ({
+const { findMany, findUnique } = vi.hoisted(() => ({
   findMany: vi.fn(),
+  findUnique: vi.fn(),
 }));
 
 vi.mock("../prisma.js", () => ({
   prisma: {
     musicianProfile: {
       findMany,
+      findUnique,
     },
   },
 }));
@@ -111,6 +113,92 @@ describe("GET /musicians", () => {
 
     const app = createApp();
     const res = await request(app, "GET", "/musicians");
+
+    expect(res.status).toBe(500);
+    expect(res.body).toEqual({ error: "Internal server error" });
+  });
+});
+
+describe("GET /musicians/:id", () => {
+  beforeEach(() => {
+    findUnique.mockReset();
+  });
+
+  const musician_id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+
+  it("returns musician as JSON", async () => {
+    const row = {
+      id: musician_id,
+      userId: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+      stageName: "Luna Eclipse",
+      bio: "Professional aerialist and fire dancer with 8+ years of international circus and corporate event experience. Specializes in solo silks and duo trapeze.",
+      baseCity: "Montreal",
+      baseCountry: "Canada",
+      hasPassport: true,
+      websiteUrl: "https://www.lunaeclipseperforming.com",
+      videoReelUrl: "https://vimeo.com/lunaeclipse/reel-2026",
+      hourlyRateUsd: 120.0,
+      isAvailable: true,
+      createdAt: new Date("2026-03-15T08:30:00.000Z"),
+    };
+
+    findUnique.mockResolvedValueOnce(row);
+
+    const app = createApp();
+    const res = await request(app, "GET", `/musicians/${musician_id}`);
+
+    console.log(res.body);
+    console.log(row);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      id: musician_id,
+      user_id: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+      stage_name: "Luna Eclipse",
+      bio: "Professional aerialist and fire dancer with 8+ years of international circus and corporate event experience. Specializes in solo silks and duo trapeze.",
+      base_city: "Montreal",
+      base_country: "Canada",
+      has_passport: true,
+      website_url: "https://www.lunaeclipseperforming.com",
+      video_reel_url: "https://vimeo.com/lunaeclipse/reel-2026",
+      hourly_rate_usd: 120.0,
+      is_available: true,
+      created_at: "2026-03-15T08:30:00.000Z",
+    });
+    expect(findUnique).toHaveBeenCalledWith({
+      where: { id: musician_id },
+      select: {
+        id: true,
+        userId: true,
+        stageName: true,
+        bio: true,
+        baseCity: true,
+        baseCountry: true,
+        hasPassport: true,
+        websiteUrl: true,
+        videoReelUrl: true,
+        hourlyRateUsd: true,
+        isAvailable: true,
+        createdAt: true,
+      }
+    });
+  });
+
+  it("returns 404 when the musician is not found", async () => {
+    findUnique.mockResolvedValueOnce(null);
+
+    const app = createApp();
+    const res = await request(app, "GET", `/musicians/${musician_id}`);
+
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ error: "Musician not found" })
+  });
+
+  it("returns 500 when the database query fails", async () => {
+    findUnique.mockRejectedValueOnce(new Error("connection refused"));
+
+    const app = createApp();
+    const res = await request(app, "GET", `/musicians/${musician_id}`);
 
     expect(res.status).toBe(500);
     expect(res.body).toEqual({ error: "Internal server error" });

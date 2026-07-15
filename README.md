@@ -6,7 +6,10 @@
 
 1. [Inspiration](#inspiration)
 2. [Data Schema](#data-schema)
-3. [Road Map](#roadmap)
+3. [Road Map:](#roadmap)
+  - [Database](#database)
+  - [Endpoints](#endpoints)
+  - [UI](#ui)
 
 ## Inspiration
 
@@ -35,7 +38,7 @@ Musicians & bands
 
 - [ ] POST `/musicians`
 - [x] GET `/musicians`
-- [ ] GET `/musicians/:id`
+- [x] GET `/musicians/:id`
 - [ ] PATCH `/musicians/:id`
 - [ ] PUT `/musicians/:id/instruments`
 - [ ] POST `/bands`
