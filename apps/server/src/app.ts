@@ -1,3 +1,4 @@
+import cors from "cors";
 import express, { type Response } from "express";
 import gigListingsRouter from "./routes/gig-listings.js";
 import instrumentsRouter from "./routes/instruments.js";
@@ -6,6 +7,7 @@ import musiciansRouter from "./routes/musicians.js";
 export function createApp() {
   const app = express();
 
+  app.use(cors({ origin: "http://localhost:3001" }));
   app.use(express.json());
 
   app.get("/", (_req, res: Response) => {

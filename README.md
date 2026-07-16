@@ -5,8 +5,8 @@
 ## Table of Contents
 
 1. [Inspiration](#inspiration)
-2. [Data Schema](#data-schema)
-3. [Road Map:](#roadmap)
+3. [Data Schema](#data-schema)
+4. [Road Map:](#roadmap)
   - [Database](#database)
   - [Endpoints](#endpoints)
   - [UI](#ui)
@@ -17,7 +17,7 @@ It is no secret that getting a band off the ground is incredibly difficult. Alon
 
 ## Data Schema
 
-![Logo](./db/schema.png)
+![Logo](./apps/server/db/schema.png)
 
 ## Roadmap
 
