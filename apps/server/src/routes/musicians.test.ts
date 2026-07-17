@@ -4,17 +4,42 @@ import { request } from "../test/request.js";
 
 const { findMany, findUnique } = vi.hoisted(() => ({
   findMany: vi.fn(),
-  findUnique: vi.fn(),
+  findUnique: vi.fn()
 }));
 
 vi.mock("../prisma.js", () => ({
   prisma: {
     musicianProfile: {
       findMany,
-      findUnique,
-    },
-  },
+      findUnique
+    }
+  }
 }));
+
+const musicianSelect = {
+  id: true,
+  userId: true,
+  stageName: true,
+  bio: true,
+  baseCity: true,
+  baseCountry: true,
+  hasPassport: true,
+  websiteUrl: true,
+  videoReelUrl: true,
+  hourlyRateUsd: true,
+  isAvailable: true,
+  createdAt: true,
+  instruments: {
+    select: {
+      isPrimary: true,
+      proficiencyLevel: true,
+      instrument: {
+        select: { id: true, name: true }
+      }
+    },
+    orderBy: [{ isPrimary: "desc" }, { instrument: { name: "asc" } }]
+  }
+};
 
 describe("GET /musicians", () => {
   beforeEach(() => {
@@ -36,6 +61,13 @@ describe("GET /musicians", () => {
         hourlyRateUsd: 120.0,
         isAvailable: true,
         createdAt: new Date("2026-03-15T08:30:00.000Z"),
+        instruments: [
+          {
+            isPrimary: true,
+            proficiencyLevel: "professional",
+            instrument: { id: 1, name: "Guitar" }
+          }
+        ]
       },
       {
         id: "cccccccc-cccc-cccc-cccc-cccccccccccc",
@@ -50,7 +82,8 @@ describe("GET /musicians", () => {
         hourlyRateUsd: 175.0,
         isAvailable: false,
         createdAt: new Date("2026-05-22T14:15:00.000Z"),
-      },
+        instruments: []
+      }
     ];
 
     findMany.mockResolvedValueOnce(rows);
@@ -73,6 +106,14 @@ describe("GET /musicians", () => {
         hourly_rate_usd: 120.0,
         is_available: true,
         created_at: "2026-03-15T08:30:00.000Z",
+        instruments: [
+          {
+            id: 1,
+            name: "Guitar",
+            proficiency_level: "professional",
+            is_primary: true
+          }
+        ]
       },
       {
         id: "cccccccc-cccc-cccc-cccc-cccccccccccc",
@@ -87,24 +128,44 @@ describe("GET /musicians", () => {
         hourly_rate_usd: 175.0,
         is_available: false,
         created_at: "2026-05-22T14:15:00.000Z",
-      },
+        instruments: []
+      }
     ]);
     expect(findMany).toHaveBeenCalledWith({
+      where: {},
       orderBy: { id: "asc" },
-      select: {
-        id: true,
-        userId: true,
-        stageName: true,
-        bio: true,
-        baseCity: true,
-        baseCountry: true,
-        hasPassport: true,
-        websiteUrl: true,
-        videoReelUrl: true,
-        hourlyRateUsd: true,
-        isAvailable: true,
-        createdAt: true,
+      select: musicianSelect
+    });
+  });
+
+  it("filters musicians by search query", async () => {
+    findMany.mockResolvedValueOnce([]);
+
+    const app = createApp();
+    const res = await request(app, "GET", "/musicians?q=guitar");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+    expect(findMany).toHaveBeenCalledWith({
+      where: {
+        OR: [
+          { stageName: { contains: "guitar", mode: "insensitive" } },
+          { bio: { contains: "guitar", mode: "insensitive" } },
+          { baseCity: { contains: "guitar", mode: "insensitive" } },
+          { baseCountry: { contains: "guitar", mode: "insensitive" } },
+          {
+            instruments: {
+              some: {
+                instrument: {
+                  name: { contains: "guitar", mode: "insensitive" }
+                }
+              }
+            }
+          }
+        ]
       },
+      orderBy: { id: "asc" },
+      select: musicianSelect
     });
   });
 
@@ -140,15 +201,19 @@ describe("GET /musicians/:id", () => {
       hourlyRateUsd: 120.0,
       isAvailable: true,
       createdAt: new Date("2026-03-15T08:30:00.000Z"),
+      instruments: [
+        {
+          isPrimary: true,
+          proficiencyLevel: "professional",
+          instrument: { id: 1, name: "Guitar" }
+        }
+      ]
     };
 
     findUnique.mockResolvedValueOnce(row);
 
     const app = createApp();
     const res = await request(app, "GET", `/musicians/${musician_id}`);
-
-    console.log(res.body);
-    console.log(row);
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
@@ -164,23 +229,18 @@ describe("GET /musicians/:id", () => {
       hourly_rate_usd: 120.0,
       is_available: true,
       created_at: "2026-03-15T08:30:00.000Z",
+      instruments: [
+        {
+          id: 1,
+          name: "Guitar",
+          proficiency_level: "professional",
+          is_primary: true
+        }
+      ]
     });
     expect(findUnique).toHaveBeenCalledWith({
       where: { id: musician_id },
-      select: {
-        id: true,
-        userId: true,
-        stageName: true,
-        bio: true,
-        baseCity: true,
-        baseCountry: true,
-        hasPassport: true,
-        websiteUrl: true,
-        videoReelUrl: true,
-        hourlyRateUsd: true,
-        isAvailable: true,
-        createdAt: true,
-      }
+      select: musicianSelect
     });
   });
 
@@ -191,7 +251,7 @@ describe("GET /musicians/:id", () => {
     const res = await request(app, "GET", `/musicians/${musician_id}`);
 
     expect(res.status).toBe(404);
-    expect(res.body).toEqual({ error: "Musician not found" })
+    expect(res.body).toEqual({ error: "Musician not found" });
   });
 
   it("returns 500 when the database query fails", async () => {
