@@ -1,9 +1,5 @@
-import { Button } from "@/components/ui/button";
+import { HomeSearchHero } from "@/components/home/HomeSearchHero";
 
 export default function Home() {
-  return (
-    <div className="">
-      <Button>Click me</Button>
-    </div>
-  );
+  return <HomeSearchHero />;
 }

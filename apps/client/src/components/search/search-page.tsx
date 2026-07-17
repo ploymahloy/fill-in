@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 
 import { GigListingCard } from "@/components/search/gig-listing-card";
@@ -13,15 +14,25 @@ import {
   searchMusicians,
   type GigListingSearchResult,
   type MusicianSearchResult,
-  type SearchType
+  type SearchType,
 } from "@/lib/search";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
-export function SearchPage() {
-  const [searchType, setSearchType] = useState<SearchType>("gigs");
-  const [query, setQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+function parseSearchType(value: string | null): SearchType {
+  return value === "musicians" ? "musicians" : "gigs";
+}
+
+function SearchPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [searchType, setSearchType] = useState<SearchType>(() =>
+    parseSearchType(searchParams.get("type"))
+  );
+  const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
+  const [debouncedQuery, setDebouncedQuery] = useState(
+    () => searchParams.get("q") ?? ""
+  );
   const [gigResults, setGigResults] = useState<GigListingSearchResult[]>([]);
   const [musicianResults, setMusicianResults] = useState<
     MusicianSearchResult[]
@@ -36,6 +47,20 @@ export function SearchPage() {
 
     return () => window.clearTimeout(timeoutId);
   }, [query]);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    params.set("type", searchType);
+    const trimmed = debouncedQuery.trim();
+    if (trimmed) {
+      params.set("q", trimmed);
+    }
+    const next = params.toString();
+    const current = searchParams.toString();
+    if (next !== current) {
+      router.replace(`/search?${next}`, { scroll: false });
+    }
+  }, [searchType, debouncedQuery, router, searchParams]);
 
   useEffect(() => {
     let cancelled = false;
@@ -185,5 +210,32 @@ export function SearchPage() {
         )}
       </section>
     </div>
+  );
+}
+
+function SearchPageFallback() {
+  return (
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10">
+      <header className="space-y-2">
+        <h1 className="text-3xl font-semibold tracking-tight">Search</h1>
+        <p className="text-muted-foreground">
+          Find open gig listings or discover musicians available for fill-in
+          work.
+        </p>
+      </header>
+      <div className="grid gap-4 md:grid-cols-2">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Skeleton key={index} className="h-48 rounded-xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function SearchPage() {
+  return (
+    <Suspense fallback={<SearchPageFallback />}>
+      <SearchPageContent />
+    </Suspense>
   );
 }
