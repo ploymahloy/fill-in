@@ -57,7 +57,7 @@ export type GigListingSearchResult = {
   } | null;
 };
 
-async function fetchJson<T>(path: string): Promise<T> {
+const fetchJson = async <T>(path: string): Promise<T> => {
   const response = await fetch(path);
 
   if (!response.ok) {
@@ -65,11 +65,11 @@ async function fetchJson<T>(path: string): Promise<T> {
   }
 
   return response.json() as Promise<T>;
-}
+};
 
-export function searchMusicians(
+export const searchMusicians = (
   query: string
-): Promise<MusicianSearchResult[]> {
+): Promise<MusicianSearchResult[]> => {
   const params = new URLSearchParams();
   if (query.trim()) {
     params.set("q", query.trim());
@@ -77,11 +77,11 @@ export function searchMusicians(
 
   const suffix = params.size > 0 ? `?${params.toString()}` : "";
   return fetchJson<MusicianSearchResult[]>(`/api/musicians${suffix}`);
-}
+};
 
-export function searchGigListings(
+export const searchGigListings = (
   query: string
-): Promise<GigListingSearchResult[]> {
+): Promise<GigListingSearchResult[]> => {
   const params = new URLSearchParams();
   if (query.trim()) {
     params.set("q", query.trim());
@@ -89,27 +89,27 @@ export function searchGigListings(
 
   const suffix = params.size > 0 ? `?${params.toString()}` : "";
   return fetchJson<GigListingSearchResult[]>(`/api/gig-listings${suffix}`);
-}
+};
 
-export function formatCurrency(amount: number): string {
+export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
     maximumFractionDigits: 0
   }).format(amount);
-}
+};
 
-export function formatDate(value: string): string {
+export const formatDate = (value: string): string => {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric"
   }).format(new Date(value));
-}
+};
 
-export function formatPayType(payType: string): string {
+export const formatPayType = (payType: string): string => {
   return payType
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
-}
+};

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/utils";
 import type { SearchType } from "@/lib/search";
 
@@ -14,12 +14,12 @@ const TABS: { value: SearchType; label: string }[] = [
   { value: "musicians", label: "Musicians" },
 ];
 
-export function HomeSearchHero() {
+export const HomeSearchHero = () => {
   const router = useRouter();
   const [searchType, setSearchType] = useState<SearchType>("gigs");
   const [query, setQuery] = useState("");
 
-  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const params = new URLSearchParams();
     params.set("type", searchType);
@@ -28,7 +28,7 @@ export function HomeSearchHero() {
       params.set("q", trimmed);
     }
     router.push(`/search?${params.toString()}`);
-  }
+  };
 
   return (
     <section className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-4 py-16">

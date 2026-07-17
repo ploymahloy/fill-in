@@ -1,14 +1,14 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/Badge";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle
-} from "@/components/ui/card";
+} from "@/components/ui/Card";
 import { formatCurrency, type MusicianSearchResult } from "@/lib/search";
 
-export function MusicianCard({ musician }: { musician: MusicianSearchResult }) {
+export const MusicianCard = ({ musician }: { musician: MusicianSearchResult }) => {
   const displayName = musician.stage_name?.trim() || "Unnamed musician";
 
   return (
@@ -59,4 +59,4 @@ export function MusicianCard({ musician }: { musician: MusicianSearchResult }) {
       </CardContent>
     </Card>
   );
-}
+};

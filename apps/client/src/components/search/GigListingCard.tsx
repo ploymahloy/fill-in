@@ -1,11 +1,11 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/Badge";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle
-} from "@/components/ui/card";
+} from "@/components/ui/Card";
 import {
   formatCurrency,
   formatDate,
@@ -13,9 +13,9 @@ import {
   type GigListingSearchResult
 } from "@/lib/search";
 
-function statusVariant(
+const statusVariant = (
   status: string
-): "default" | "secondary" | "destructive" | "outline" {
+): "default" | "secondary" | "destructive" | "outline" => {
   switch (status) {
     case "open":
       return "default";
@@ -26,24 +26,38 @@ function statusVariant(
     default:
       return "outline";
   }
-}
+};
 
-export function GigListingCard({
+export const GigListingCard = ({
   listing
 }: {
   listing: GigListingSearchResult;
-}) {
-  const location = listing.gig
-    ? `${listing.gig.venue_name} · ${listing.gig.city}, ${listing.gig.country}`
-    : listing.tour
-      ? `${listing.tour.title}`
-      : "Location TBD";
+}) => {
+  const listingKind = listing.gig ? "gig" : listing.tour ? "tour" : "none";
 
-  const dateLabel = listing.gig
-    ? formatDate(listing.gig.gig_date)
-    : listing.tour
-      ? `${formatDate(listing.tour.start_date)} – ${formatDate(listing.tour.end_date)}`
-      : null;
+  let location: string;
+  switch (listingKind) {
+    case "gig":
+      location = `${listing.gig!.venue_name} · ${listing.gig!.city}, ${listing.gig!.country}`;
+      break;
+    case "tour":
+      location = listing.tour!.title;
+      break;
+    default:
+      location = "Location TBD";
+  }
+
+  let dateLabel: string | null;
+  switch (listingKind) {
+    case "gig":
+      dateLabel = formatDate(listing.gig!.gig_date);
+      break;
+    case "tour":
+      dateLabel = `${formatDate(listing.tour!.start_date)} - ${formatDate(listing.tour!.end_date)}`;
+      break;
+    default:
+      dateLabel = null;
+  }
 
   return (
     <Card>
@@ -84,4 +98,4 @@ export function GigListingCard({
       </CardContent>
     </Card>
   );
-}
+};

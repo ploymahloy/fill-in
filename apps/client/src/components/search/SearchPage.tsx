@@ -4,11 +4,11 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 
-import { GigListingCard } from "@/components/search/gig-listing-card";
-import { MusicianCard } from "@/components/search/musician-card";
-import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Skeleton } from "@/components/ui/skeleton";
+import { GigListingCard } from "@/components/search/GigListingCard";
+import { MusicianCard } from "@/components/search/MusicianCard";
+import { Input } from "@/components/ui/Input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
+import { Skeleton } from "@/components/ui/Skeleton";
 import {
   searchGigListings,
   searchMusicians,
@@ -19,11 +19,11 @@ import {
 
 const SEARCH_DEBOUNCE_MS = 300;
 
-function parseSearchType(value: string | null): SearchType {
+const parseSearchType = (value: string | null): SearchType => {
   return value === "musicians" ? "musicians" : "gigs";
 }
 
-function SearchPageContent() {
+const SearchPageContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchType, setSearchType] = useState<SearchType>(() =>
@@ -65,7 +65,7 @@ function SearchPageContent() {
   useEffect(() => {
     let cancelled = false;
 
-    async function loadResults() {
+    const loadResults = async () => {
       setIsLoading(true);
       setError(null);
 
@@ -92,7 +92,7 @@ function SearchPageContent() {
           setIsLoading(false);
         }
       }
-    }
+    };
 
     void loadResults();
 
@@ -211,9 +211,9 @@ function SearchPageContent() {
       </section>
     </div>
   );
-}
+};
 
-function SearchPageFallback() {
+const SearchPageFallback = () => {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10">
       <header className="space-y-2">
@@ -230,12 +230,12 @@ function SearchPageFallback() {
       </div>
     </div>
   );
-}
+};
 
-export function SearchPage() {
+export const SearchPage = () => {
   return (
     <Suspense fallback={<SearchPageFallback />}>
       <SearchPageContent />
     </Suspense>
   );
-}
+};
