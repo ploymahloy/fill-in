@@ -106,7 +106,7 @@ export const HomeSearchHero = () => {
                     ? "Search by instrument, city, or band"
                     : "Search by name, instrument, or city"
                 }
-                className="h-14 rounded-full border-0 bg-white pr-14 pl-5 text-base text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-[#e11d2e]/40 md:text-base"
+                className="h-14 rounded-full border-0 bg-white pr-14 pl-5 text-base text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-[#000099]/40 md:text-base"
               />
               <button
                 type="submit"
