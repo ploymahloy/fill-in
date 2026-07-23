@@ -32,14 +32,6 @@ export const HomeSearchHero = () => {
 
   return (
     <section className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-4 py-16">
-      <Image
-        src="/hero-venue.jpg"
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover object-center"
-      />
       <div
         aria-hidden
         className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/40 to-black/65"
