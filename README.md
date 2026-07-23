@@ -17,7 +17,7 @@ It is no secret that getting a band off the ground is incredibly difficult. Alon
 
 ## Data Schema
 
-![Logo](./apps/server/db/schema.png)
+![Logo](./server/db/schema.png)
 
 ## Roadmap
 
