@@ -1,3 +1,5 @@
+"use client";
+
 import { Badge } from "@/components/ui/Badge";
 import {
   Card,
@@ -8,66 +10,54 @@ import {
 } from "@/components/ui/Card";
 import {
   formatCurrency,
-  formatDate,
   formatPayType,
   type GigListingSearchResult
 } from "@/lib/search";
+import { cn } from "@/lib/utils";
 
-const statusVariant = (
-  status: string
-): "default" | "secondary" | "destructive" | "outline" => {
-  switch (status) {
-    case "open":
-      return "default";
-    case "filled":
-      return "secondary";
-    case "cancelled":
-      return "destructive";
-    default:
-      return "outline";
-  }
+import { getGigListingMeta, statusVariant } from "./gigListingMeta";
+
+type GigListingCardProps = {
+  listing: GigListingSearchResult;
+  isActive?: boolean;
+  onSelect?: (listing: GigListingSearchResult) => void;
 };
 
 export const GigListingCard = ({
-  listing
-}: {
-  listing: GigListingSearchResult;
-}) => {
-  const listingKind = listing.gig ? "gig" : listing.tour ? "tour" : "none";
+  listing,
+  isActive = false,
+  onSelect
+}: GigListingCardProps) => {
+  const { location, dateLabel } = getGigListingMeta(listing);
+  const bandName = listing.band?.band_name ?? "Unknown band";
 
-  let location: string;
-  switch (listingKind) {
-    case "gig":
-      location = `${listing.gig!.venue_name} · ${listing.gig!.city}, ${listing.gig!.country}`;
-      break;
-    case "tour":
-      location = listing.tour!.title;
-      break;
-    default:
-      location = "Location TBD";
-  }
-
-  let dateLabel: string | null;
-  switch (listingKind) {
-    case "gig":
-      dateLabel = formatDate(listing.gig!.gig_date);
-      break;
-    case "tour":
-      dateLabel = `${formatDate(listing.tour!.start_date)} - ${formatDate(listing.tour!.end_date)}`;
-      break;
-    default:
-      dateLabel = null;
-  }
+  const handleSelect = () => {
+    onSelect?.(listing);
+  };
 
   return (
-    <Card>
+    <Card
+      role="button"
+      tabIndex={isActive ? -1 : 0}
+      aria-label={`View listing for ${listing.instrument.name} with ${bandName}`}
+      aria-hidden={isActive}
+      onClick={handleSelect}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleSelect();
+        }
+      }}
+      className={cn(
+        "cursor-pointer transition-colors outline-none hover:bg-muted/40 focus-visible:ring-3 focus-visible:ring-ring/50",
+        isActive && "hidden"
+      )}
+    >
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="space-y-1">
             <CardTitle>{listing.instrument.name}</CardTitle>
-            <CardDescription>
-              {listing.band?.band_name ?? "Unknown band"}
-            </CardDescription>
+            <CardDescription>{bandName}</CardDescription>
           </div>
           <Badge variant={statusVariant(listing.status)}>
             {listing.status}
@@ -75,7 +65,9 @@ export const GigListingCard = ({
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <p className="text-sm text-muted-foreground">{listing.description}</p>
+        <p className="line-clamp-3 text-sm text-muted-foreground">
+          {listing.description}
+        </p>
         <dl className="grid gap-2 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-muted-foreground">Location</dt>

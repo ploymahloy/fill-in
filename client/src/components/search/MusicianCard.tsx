@@ -1,3 +1,5 @@
+"use client";
+
 import { Badge } from "@/components/ui/Badge";
 import {
   Card,
@@ -7,12 +9,43 @@ import {
   CardTitle
 } from "@/components/ui/Card";
 import { formatCurrency, type MusicianSearchResult } from "@/lib/search";
+import { cn } from "@/lib/utils";
 
-export const MusicianCard = ({ musician }: { musician: MusicianSearchResult }) => {
+type MusicianCardProps = {
+  musician: MusicianSearchResult;
+  isActive?: boolean;
+  onSelect?: (musician: MusicianSearchResult) => void;
+};
+
+export const MusicianCard = ({
+  musician,
+  isActive = false,
+  onSelect
+}: MusicianCardProps) => {
   const displayName = musician.stage_name?.trim() || "Unnamed musician";
 
+  const handleSelect = () => {
+    onSelect?.(musician);
+  };
+
   return (
-    <Card>
+    <Card
+      role="button"
+      tabIndex={isActive ? -1 : 0}
+      aria-label={`View profile for ${displayName}`}
+      aria-hidden={isActive}
+      onClick={handleSelect}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleSelect();
+        }
+      }}
+      className={cn(
+        "cursor-pointer transition-colors outline-none hover:bg-muted/40 focus-visible:ring-3 focus-visible:ring-ring/50",
+        isActive && "hidden"
+      )}
+    >
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="space-y-1">

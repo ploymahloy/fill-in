@@ -1,11 +1,15 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 
 import { GigListingCard } from "@/components/search/GigListingCard";
 import { MusicianCard } from "@/components/search/MusicianCard";
+import {
+  SearchResultModal,
+  type SelectedSearchResult
+} from "@/components/search/SearchResultModal";
 import { Input } from "@/components/ui/Input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -39,6 +43,11 @@ const SearchPageContent = () => {
   >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<SelectedSearchResult | null>(null);
+
+  const closeModal = useCallback(() => {
+    setSelected(null);
+  }, []);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -61,6 +70,10 @@ const SearchPageContent = () => {
       router.replace(`/search?${next}`, { scroll: false });
     }
   }, [searchType, debouncedQuery, router, searchParams]);
+
+  useEffect(() => {
+    setSelected(null);
+  }, [searchType, debouncedQuery]);
 
   useEffect(() => {
     let cancelled = false;
@@ -198,17 +211,46 @@ const SearchPageContent = () => {
         ) : searchType === "gigs" ? (
           <div className="grid gap-4 md:grid-cols-2">
             {gigResults.map((listing) => (
-              <GigListingCard key={listing.id} listing={listing} />
+              <GigListingCard
+                key={listing.id}
+                listing={listing}
+                isActive={
+                  selected?.kind === "gig" && selected.data.id === listing.id
+                }
+                onSelect={(data) => {
+                  setSelected({
+                    kind: "gig",
+                    data
+                  });
+                }}
+              />
             ))}
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {musicianResults.map((musician) => (
-              <MusicianCard key={musician.id} musician={musician} />
+              <MusicianCard
+                key={musician.id}
+                musician={musician}
+                isActive={
+                  selected?.kind === "musician" &&
+                  selected.data.id === musician.id
+                }
+                onSelect={(data) => {
+                  setSelected({
+                    kind: "musician",
+                    data
+                  });
+                }}
+              />
             ))}
           </div>
         )}
       </section>
+
+      {selected ? (
+        <SearchResultModal selected={selected} onClose={closeModal} />
+      ) : null}
     </div>
   );
 };
