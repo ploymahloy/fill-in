@@ -150,7 +150,11 @@ export const SearchResultModal = ({
             {selected.kind === "musician" ? (
               <MusicianProfile musician={selected.data} />
             ) : (
-              <GigListingProfile listing={selected.data} />
+              <GigListingProfile
+                key={selected.data.id}
+                listing={selected.data}
+                onApplicationSuccess={onClose}
+              />
             )}
           </div>
         </div>

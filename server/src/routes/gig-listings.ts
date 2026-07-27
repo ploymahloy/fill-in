@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../prisma.js";
 
 const router = Router();
+const DEV_MUSICIAN_ID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa01";
 
 const listingSelect = {
   id: true,
@@ -45,6 +46,33 @@ const listingSelect = {
 
 function parseSearchQuery(req: Request): string {
   return typeof req.query.q === "string" ? req.query.q.trim() : "";
+}
+
+function parseApplicationBody(req: Request): {
+  listingId: string | null;
+  pitchMessage: string | null;
+} {
+  const body =
+    req.body && typeof req.body === "object" ? req.body : ({} as Record<string, unknown>);
+  const listingId =
+    typeof body.listing_id === "string" && body.listing_id.trim()
+      ? body.listing_id.trim()
+      : null;
+  const pitchMessage =
+    typeof body.pitch_message === "string" && body.pitch_message.trim()
+      ? body.pitch_message.trim()
+      : null;
+
+  return { listingId, pitchMessage };
+}
+
+function isPrismaUniqueConstraintError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "P2002"
+  );
 }
 
 function buildListingWhere(q: string): Prisma.GigListingWhereInput {
@@ -135,6 +163,58 @@ router.get("/", async (req: Request, res: Response) => {
   } catch (err) {
     console.error("GET /gig-listings failed:", err);
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/applications", async (req: Request, res: Response) => {
+  try {
+    const { listingId, pitchMessage } = parseApplicationBody(req);
+
+    if (!listingId) {
+      return res.status(400).json({ error: "listing_id is required" });
+    }
+
+    const listing = await prisma.gigListing.findUnique({
+      where: { id: listingId },
+      select: { id: true }
+    });
+
+    if (!listing) {
+      return res.status(404).json({ error: "Gig listing not found" });
+    }
+
+    const application = await prisma.application.create({
+      data: {
+        listingId,
+        musicianId: DEV_MUSICIAN_ID,
+        pitchMessage,
+        status: "pending"
+      },
+      select: {
+        id: true,
+        listingId: true,
+        musicianId: true,
+        status: true,
+        createdAt: true
+      }
+    });
+
+    return res.status(201).json({
+      id: application.id,
+      listing_id: application.listingId,
+      musician_id: application.musicianId,
+      status: application.status,
+      created_at: application.createdAt
+    });
+  } catch (err) {
+    if (isPrismaUniqueConstraintError(err)) {
+      return res.status(409).json({
+        error: "You have already applied to this listing."
+      });
+    }
+
+    console.error("POST /gig-listings/applications failed:", err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

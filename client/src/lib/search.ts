@@ -57,11 +57,59 @@ export type GigListingSearchResult = {
   } | null;
 };
 
+export type ApiError = {
+  name: "ApiError";
+  message: string;
+  status: number;
+};
+
+export const createApiError = (message: string, status: number): ApiError => ({
+  name: "ApiError",
+  message,
+  status
+});
+
+export const isApiError = (error: unknown): error is ApiError => {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "name" in error &&
+    (error as ApiError).name === "ApiError"
+  );
+};
+
 const fetchJson = async <T>(path: string): Promise<T> => {
   const response = await fetch(path);
 
   if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
+    throw createApiError(`Request failed with status ${response.status}`, response.status);
+  }
+
+  return response.json() as Promise<T>;
+};
+
+const postJson = async <T>(path: string, body: unknown): Promise<T> => {
+  const response = await fetch(path, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    let message = `Request failed with status ${response.status}`;
+
+    try {
+      const data = (await response.json()) as { error?: string };
+      if (typeof data.error === "string" && data.error.trim()) {
+        message = data.error;
+      }
+    } catch {
+      // Ignore invalid error bodies and fall back to the status-based message.
+    }
+
+    throw createApiError(message, response.status);
   }
 
   return response.json() as Promise<T>;
@@ -89,6 +137,22 @@ export const searchGigListings = (
 
   const suffix = params.size > 0 ? `?${params.toString()}` : "";
   return fetchJson<GigListingSearchResult[]>(`/api/gig-listings${suffix}`);
+};
+
+export const submitGigApplication = (
+  listingId: string,
+  pitchMessage?: string
+): Promise<{
+  id: string;
+  listing_id: string;
+  musician_id: string;
+  status: string;
+  created_at: string;
+}> => {
+  return postJson("/api/gig-listings/applications", {
+    listing_id: listingId,
+    pitch_message: pitchMessage?.trim() ? pitchMessage.trim() : undefined
+  });
 };
 
 export const formatCurrency = (amount: number): string => {

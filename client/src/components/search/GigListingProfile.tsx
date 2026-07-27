@@ -1,19 +1,79 @@
+import { useEffect, useRef, useState } from "react";
+import { Loader2 } from "lucide-react";
+
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import {
   formatCurrency,
   formatPayType,
+  isApiError,
+  submitGigApplication,
   type GigListingSearchResult
 } from "@/lib/search";
 
 import { getGigListingMeta, statusVariant } from "./gigListingMeta";
 
 export const GigListingProfile = ({
-  listing
+  listing,
+  onApplicationSuccess
 }: {
   listing: GigListingSearchResult;
+  onApplicationSuccess?: () => void;
 }) => {
   const { listingKind, location, dateLabel } = getGigListingMeta(listing);
   const bandName = listing.band?.band_name ?? "Unknown band";
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
+  const [submissionState, setSubmissionState] = useState<{
+    tone: "success" | "error";
+    message: string;
+  } | null>(null);
+  const closeTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current !== null) {
+        window.clearTimeout(closeTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleApply = async () => {
+    if (isSubmitting || hasApplied) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmissionState(null);
+
+    try {
+      await submitGigApplication(listing.id);
+      setHasApplied(true);
+      setSubmissionState({
+        tone: "success",
+        message: "Application submitted successfully."
+      });
+      closeTimeoutRef.current = window.setTimeout(() => {
+        onApplicationSuccess?.();
+      }, 900);
+    } catch (error) {
+      if (isApiError(error) && error.status === 409) {
+        setHasApplied(true);
+        return;
+      }
+
+      const message = isApiError(error)
+        ? error.message
+        : "We couldn't submit your application. Please try again.";
+
+      setSubmissionState({
+        tone: "error",
+        message
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -71,6 +131,44 @@ export const GigListingProfile = ({
           </div>
         ) : null}
       </dl>
+
+      <section className="space-y-3 border-t pt-4">
+        <div className="space-y-2">
+          <Button
+            type="button"
+            className="w-full"
+            onClick={handleApply}
+            disabled={isSubmitting || hasApplied}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="animate-spin" />
+                Submitting...
+              </>
+            ) : hasApplied ? (
+              "Application submitted"
+            ) : (
+              "Submit application"
+            )}
+          </Button>
+          <p className="text-sm text-muted-foreground">
+            Applications are submitted with the current demo musician profile.
+          </p>
+        </div>
+        <div aria-live="polite">
+          {submissionState ? (
+            <p
+              className={
+                submissionState.tone === "success"
+                  ? "rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground"
+                  : "rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+              }
+            >
+              {submissionState.message}
+            </p>
+          ) : null}
+        </div>
+      </section>
     </div>
   );
 };
